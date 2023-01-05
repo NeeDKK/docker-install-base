@@ -11,9 +11,10 @@ services:
       - '8086:8086'
     volumes:
       - influxdb:/root/influxdb/data
-      #- $PWD/influxdb.conf:/root/influxdb/influxdb.conf
+      - $PWD/influxdb.conf:/root/influxdb/influxdb.conf
     environment:
       - INFLUXDB_ADMIN_USER=root
       - INFLUXDB_ADMIN_PASSWORD=root
       - INFLUXDB_DB=serverInfo
+      - TZ=Asia/Shanghai
     restart: always
