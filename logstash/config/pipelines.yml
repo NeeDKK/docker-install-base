@@ -1,0 +1,2 @@
+- pipeline.id: springboot-elk-demo
+  path.config: "/usr/share/logstash/pipeline/logstash.conf"
