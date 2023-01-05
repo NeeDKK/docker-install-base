@@ -1,0 +1,18 @@
+version: '2'
+
+volumes:
+  influxdb:
+
+services:
+  influxdb:
+    image: influxdb:1.7.8
+    ports:
+      - '8086:8086'
+    volumes:
+      - influxdb:/root/influxdb/data
+      #- $PWD/influxdb.conf:/root/influxdb/influxdb.conf
+    environment:
+      - INFLUXDB_ADMIN_USER=root
+      - INFLUXDB_ADMIN_PASSWORD=root
+      - INFLUXDB_DB=serverInfo
+    restart: always
