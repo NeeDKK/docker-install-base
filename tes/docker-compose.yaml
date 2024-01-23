@@ -1,0 +1,15 @@
+version: '3.6'
+services:
+  internal-uaa-service:
+    image: landcloud/internal-uaa-service:23.3.8.1
+    platform: linux/x86_64
+    ports:
+      - "9094:8094"
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx256m"
+      SPRING_PROFILES_ACTIVE: "dev"
+      SERVER_PORT: 8094
+      NACOS_NAMESPACE: wuzij_dev_interal
+      NACOS_SERVER: "47.114.160.45:8848"
+      NACOS_USERNAME: "nacos"
+      NACOS_PASSWORD: "CxuwGzdvn_yz0gm0"
