@@ -1,0 +1,67 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: tes-redis-config
+  namespace: t1cp-hpftes1-ns
+  labels:
+    app: tes-redis-config
+    appname: tes
+data:
+  redis-master.conf: |
+    maxmemory 256mb
+    requirepass redis#123
+    save 3600 1 300 10 60 100
+    masterauth redis#123
+    min-replicas-to-write 0
+    min-replicas-max-lag 10
+    repl-timeout 60
+    repl-ping-slave-period 10
+    loglevel verbose
+    logfile "/data/redis/redis-master.log"
+  redis.conf: |
+    maxmemory 256mb
+    requirepass redis#123
+    save 3600 1 300 10 60 100
+    replicaof tes-redis-a-0.tes-redis-a.t1cp-hpftes1-ns.svc.cluster.local 6379
+    masterauth redis#123
+    replica-serve-stale-data yes
+    repl-timeout 60
+    repl-ping-replica-period 10
+    min-replicas-to-write 0
+    min-replicas-max-lag 10
+    loglevel verbose
+    logfile "/data/redis/redis-slave.log"
+  run.sh: |
+    #!/bin/sh
+    role=$1
+    hname=$(hostname) 
+    mkdir -p /data/redis
+    
+    if [ $role == "master" ];then
+        echo "run redis master"
+        redis-server /etc/redis/redis-master.conf 
+    elif [ $role == "sentinel" ];then
+        echo "run redis sentinel"
+        cp /etc/redis/sentinel.conf /data/redis
+        redis-sentinel /data/redis/sentinel.conf
+    else
+        echo "run redis slave"
+        redis-server /etc/redis/redis.conf
+    fi
+  sentinel.conf: |
+    port 26379
+    bind 0.0.0.0
+    requirepass redis#123
+    protected-mode no
+    
+    sentinel monitor mymaster tes-redis-a-0.tes-redis-a.t1cp-hpftes1-ns.svc.cluster.local 6379 2
+    sentinel auth-pass mymaster redis#123
+    sentinel down-after-milliseconds mymaster 5000
+    sentinel parallel-syncs mymaster 1
+    sentinel failover-timeout mymaster 30000
+    sentinel config-epoch mymaster 0
+    sentinel leader-epoch mymaster 0
+    sentinel announce-hostnames yes
+    sentinel resolve-hostnames yes
+    loglevel verbose
+    logfile /data/redis/redis-sentinel.log

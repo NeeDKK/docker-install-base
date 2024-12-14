@@ -1,0 +1,69 @@
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: tes-redis-a
+  namespace: t1cp-hpftes1-ns
+  labels:
+    app: tes-redis-a
+    appname: tes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tes-redis-a
+  template:
+    metadata:
+      labels:
+        app: tes-redis-a
+    spec:
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      containers:
+        - resources: {}
+          terminationMessagePath: /data/redis/redis-master.log
+          name: redis-server
+          command:
+            - /bin/sh
+            - /etc/redis/run.sh
+          ports:
+            - containerPort: 6379
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: redis-config-volume
+              mountPath: /etc/redis/
+            - name: redis-data
+              mountPath: /data/redis
+          terminationMessagePolicy: File
+          image: >-
+            redis:7.2.5-alpine3.20
+          args:
+            - master
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-a-pv
+        - name: redis-config-volume
+          configMap:
+            name: tes-redis-config
+            defaultMode: 420
+      dnsPolicy: ClusterFirst
+  serviceName: tes-redis-a
+  podManagementPolicy: OrderedReady
+
+  
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tes-redis-a
+  namespace: t1cp-hpftes1-ns
+  labels:
+    appname: tes
+    app: tes-redis-a
+spec:
+  ports:
+  - port: 6379
+  clusterIP: None
+  selector:
+    app: tes-redis-a

@@ -1,0 +1,63 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: tes-redis-sentinel
+  namespace: t1cp-hpftes1-ns
+  labels:
+    app: tes-redis-sentinel
+    appname: default-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: tes-redis-sentinel
+  template:
+    metadata:
+      labels:
+        app: tes-redis-sentinel
+    spec:
+      volumes:
+        - name: redis-config-volume
+          configMap:
+            name: tes-redis-config
+            defaultMode: 420
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-sentinel-pv
+      containers:
+        - name: redis-sentinel
+          image: redis:7.2.5-alpine3.20
+          imagePullPolicy: Never
+          command:
+            - /bin/sh
+            - /etc/redis/run.sh
+          args:
+            - sentinel
+          ports:
+            - containerPort: 26379
+              protocol: TCP
+          volumeMounts:
+            - name: redis-config-volume
+              mountPath: /etc/redis
+            - name: redis-data
+              mountPath: /data/redis
+          terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tes-redis-sentinel
+  namespace: t1cp-hpftes1-ns
+  labels:
+    appname: default-app
+    app: tes-redis-sentinel
+spec:
+  ports:
+  - port: 26379
+    targetPort: 26379
+  type: ClusterIP
+  selector:
+    app: tes-redis-sentinel

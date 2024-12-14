@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tes-redis-sentinel-external
+  namespace: t1cp-hpftes1-ns
+  annotations:
+    metallb.universe.tf/allow-shared-ip: "sentinel"
+    metallb.universe.tf/loadBalancerIPs: "127.0.0.1"
+    service.kubernetes.io/topology-aware-hints: "auto"
+spec:
+  type: LoadBalancer
+  ports:
+    - name: sentinel
+      port: 26379
+      targetPort: 26379
+      protocol: TCP
+  selector:
+    app: tes-redis-sentinel

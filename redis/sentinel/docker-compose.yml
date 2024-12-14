@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  redis-master:
+    image: redis:7
+    container_name: redis-master
+    ports:
+      - "6379:6379"
+    networks:
+      - redis-net
+    volumes:
+      - ./data/master:/data
+    command: redis-server --requirepass redis#123 --appendonly yes
+
+  redis-slave1:
+    image: redis:7
+    container_name: redis-slave1
+    ports:
+      - "6380:6379"
+    networks:
+      - redis-net
+    volumes:
+      - ./data/slave1:/data
+    command: redis-server --slaveof redis-master 6379 --masterauth redis#123 --requirepass redis#123 --appendonly yes
+
+  redis-slave2:
+    image: redis:7
+    container_name: redis-slave2
+    ports:
+      - "6381:6379"
+    networks:
+      - redis-net
+    volumes:
+      - ./data/slave2:/data
+    command: redis-server --slaveof redis-master 6379 --masterauth redis#123 --requirepass redis#123 --appendonly yes
+
+  sentinel1:
+    image: redis:7
+    container_name: sentinel1
+    ports:
+      - "26379:26379"
+    networks:
+      - redis-net
+    depends_on:
+      - redis-master
+    volumes:
+      - ./data/sentinel1:/var/lib/redis-sentinel
+    command: >
+      bash -c "
+      echo 'sentinel monitor mymaster 127.0.0.1 6379 2' > /var/lib/redis-sentinel/sentinel.conf &&
+      echo 'sentinel down-after-milliseconds mymaster 5000' >> /var/lib/redis-sentinel/sentinel.conf &&
+      echo 'sentinel failover-timeout mymaster 60000' >> /var/lib/redis-sentinel/sentinel.conf &&
+      echo 'sentinel parallel-syncs mymaster 1' >> /var/lib/redis-sentinel/sentinel.conf &&
+      echo 'sentinel auth-pass mymaster redis#123' >> /var/lib/redis-sentinel/sentinel.conf &&
+      redis-sentinel /var/lib/redis-sentinel/sentinel.conf
+      "
+
+  sentinel2:
+    image: redis:7
+    container_name: sentinel2
+    ports:
+      - "26380:26379"
+    networks:
+      - redis-net
+    depends_on:
+      - redis-master
+    volumes:
+      - ./data/sentinel2:/var/lib/redis-sentinel
+    command: >
+      bash -c "
+      echo 'sentinel monitor mymaster 127.0.0.1 6379 2' > /var/lib/redis-sentinel/sentinel.conf &&
+      echo 'sentinel down-after-milliseconds mymaster 5000' >> /var/lib/redis-sentinel/sentinel.conf &&
+      echo 'sentinel failover-timeout mymaster 60000' >> /var/lib/redis-sentinel/sentinel.conf &&
+      echo 'sentinel parallel-syncs mymaster 1' >> /var/lib/redis-sentinel/sentinel.conf &&
+      echo 'sentinel auth-pass mymaster redis#123' >> /var/lib/redis-sentinel/sentinel.conf &&
+      redis-sentinel /var/lib/redis-sentinel/sentinel.conf
+      "
+
+  sentinel3:
+    image: redis:7
+    container_name: sentinel3
+    ports:
+      - "26381:26379"
+    networks:
+      - redis-net
+    depends_on:
+      - redis-master
+    volumes:
+      - ./data/sentinel3:/var/lib/redis-sentinel
+    command: >
+      bash -c "
+      echo 'sentinel monitor mymaster 127.0.0.1 6379 2' > /var/lib/redis-sentinel/sentinel.conf &&
+      echo 'sentinel down-after-milliseconds mymaster 5000' >> /var/lib/redis-sentinel/sentinel.conf &&
+      echo 'sentinel failover-timeout mymaster 60000' >> /var/lib/redis-sentinel/sentinel.conf &&
+      echo 'sentinel parallel-syncs mymaster 1' >> /var/lib/redis-sentinel/sentinel.conf &&
+      echo 'sentinel auth-pass mymaster redis#123' >> /var/lib/redis-sentinel/sentinel.conf &&
+      redis-sentinel /var/lib/redis-sentinel/sentinel.conf
+      "
+
+networks:
+  redis-net:
