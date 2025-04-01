@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  gitlab:
+    image: gitlab/gitlab-ce
+    container_name: gitlab
+    restart: always
+    privileged: true
+    ports:
+      - "9980:80"
+      - "9922:22"
+    volumes:
+      - /Users/wuzijie/data/gitlab/etc:/etc/gitlab
+      - /Users/wuzijie/data/gitlab/gitlab/log:/var/log/gitlab
+      - /Users/wuzijie/data/gitlab/gitlab/opt:/var/opt/gitlab
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://192.168.31.109'
+        gitlab_rails['gitlab_ssh_host'] = '192.168.31.109'
+        gitlab_rails['gitlab_shell_ssh_port'] = 9922

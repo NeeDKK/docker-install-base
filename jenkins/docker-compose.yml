@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    restart: always
+    privileged: true
+    user: root
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - /Users/wuzijie/data/jenkins/jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      - JENKINS_OPTS=--prefix=/jenkins
+      - JENKINS_SLAVE_AGENT_PORT=50000
+
+
+  jenkins-agent:
+    image: openjdk:17-jdk
+    container_name: jenkins-agent
+    restart: always
+    depends_on:
+      - jenkins
+    volumes:
+      - agent_home:/var/jenkins
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >
+        curl -sO http://192.168.31.109:8080/jenkins/jnlpJars/agent.jar &&
+        java -jar agent.jar -url http://192.168.31.109:8080/jenkins/ -secret f11e2690640a058bbf266e571cf92acbce7f7bb01479ea8fa05246934abb0a07 -name "cicd-node" -webSocket -workDir "/home/jenkins"
+
+volumes:
+  jenkins_home:
+  agent_home:
