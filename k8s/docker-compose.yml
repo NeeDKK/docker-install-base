@@ -1,0 +1,14 @@
+version: '3'
+services:
+  kuboard:
+    image: eipwork/kuboard:v3
+    container_name: kuboard
+    restart: unless-stopped
+    ports:
+      - "8089:80"
+      - "10081:10081"
+    environment:
+      - KUBOARD_ENDPOINT=http://127.0.0.1:8089
+      - KUBOARD_AGENT_SERVER_TCP_PORT=10081
+    volumes:
+      - /Users/wuzijie/code/dockercode/docker-install-base/k8s:/data

@@ -52,7 +52,8 @@ spec:
             initialDelaySeconds: 60
             timeoutSeconds: 10
             periodSeconds: 15
-            failureThreshold: 10
+            failureThreshold: 3
+            successThreshold: 1
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
@@ -60,7 +61,8 @@ spec:
             initialDelaySeconds: 60
             timeoutSeconds: 10
             periodSeconds: 15
-            failureThreshold: 10
+            failureThreshold: 3
+            successThreshold: 1
           # env----------------------------------------
           env:
             - name: SERVER_PORT
@@ -93,6 +95,16 @@ spec:
             - name: HTTP_PROXY_PORT
             - name: HTTPS_PROXY
             - name: HTTP_PROXY
+            - name: MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
+              value: "true"
+            - name: MANAGEMENT_HEALTH_REDIS_ENABLED
+              value: "true"
+            - name: MANAGEMENT_HEALTH_REDIS_TIMEOUT
+              value: "5000"
+            - name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_LIVENESS_EXCLUDE
+              value: "redis"
+            - name: MANAGEMENT_ENDPOINT_HEALTH_GROUP_READINESS_INCLUDE
+              value: "redis"
           ports:
             - containerPort: 8080
               protocol: TCP
